@@ -16,8 +16,12 @@ internal static class TestRunner
         var tests = new Action[]
         {
             BuildsTemplateModelFromNotificationRequest,
+            BuildsSubjectUsingConfiguredPrefixAndRecordCode,
+            OmitsDetailsWhenConfiguredToDoSo,
             BuildsReadableBodyFromTemplateModel,
+            SortsMetadataInBodyOutput,
             NotifierInvokesSenderWithBuiltModelAndBody,
+            PassesCancellationTokenToSender,
             RegistersEmailNotifierInDependencyInjection
         };
 
@@ -43,6 +47,36 @@ internal static class TestRunner
         Assert.Equal("corr-1", model.CorrelationId);
         Assert.Equal(1, model.Details.Count);
         Assert.Equal(1, model.ToAddresses.Count);
+        Assert.Equal("errors@afh.local", model.FromAddress);
+    }
+
+    private static void BuildsSubjectUsingConfiguredPrefixAndRecordCode()
+    {
+        var builder = new ErrorEmailMessageBuilder();
+        var subject = builder.BuildSubject(CreateRequest(), CreateOptions());
+
+        Assert.Equal("[Errors] Error: dependency.failure", subject);
+    }
+
+    private static void OmitsDetailsWhenConfiguredToDoSo()
+    {
+        var builder = new ErrorEmailMessageBuilder();
+        var options = CreateOptions();
+        options = new ErrorEmailOptions
+        {
+            FromAddress = options.FromAddress,
+            FromDisplayName = options.FromDisplayName,
+            ToAddresses = options.ToAddresses,
+            CcAddresses = options.CcAddresses,
+            BccAddresses = options.BccAddresses,
+            SubjectPrefix = options.SubjectPrefix,
+            IncludeDetails = false
+        };
+        var model = builder.BuildTemplateModel(
+            CreateRequest(),
+            options);
+
+        Assert.Equal(0, model.Details.Count);
     }
 
     private static void BuildsReadableBodyFromTemplateModel()
@@ -53,8 +87,23 @@ internal static class TestRunner
 
         Assert.Contains("Summary: Dependency call failed.", body);
         Assert.Contains("Severity: Error", body);
+        Assert.Contains("Details:", body);
         Assert.Contains("Metadata:", body);
-        Assert.Contains("traceId: trace-1", body);
+        Assert.Contains("TraceId: trace-1", body);
+        Assert.Contains("CorrelationId: corr-1", body);
+    }
+
+    private static void SortsMetadataInBodyOutput()
+    {
+        var builder = new ErrorEmailMessageBuilder();
+        var request = CreateRequest(new Dictionary<string, string?>
+        {
+            ["zeta"] = "last",
+            ["alpha"] = "first"
+        });
+        var body = builder.BuildBody(builder.BuildTemplateModel(request, CreateOptions()));
+
+        Assert.True(body.IndexOf("- alpha: first", StringComparison.Ordinal) < body.IndexOf("- zeta: last", StringComparison.Ordinal));
     }
 
     private static void NotifierInvokesSenderWithBuiltModelAndBody()
@@ -80,6 +129,25 @@ internal static class TestRunner
         Assert.Contains("Dependency call failed.", capturedBody!);
     }
 
+    private static void PassesCancellationTokenToSender()
+    {
+        var expected = new CancellationToken(canceled: true);
+        CancellationToken actual = default;
+
+        var notifier = new AFH.Common.Errors.Email.Notifications.EmailErrorNotifier(
+            CreateOptions(),
+            new ErrorEmailMessageBuilder(),
+            (_, _, cancellationToken) =>
+            {
+                actual = cancellationToken;
+                return Task.CompletedTask;
+            });
+
+        notifier.NotifyAsync(CreateRequest(), expected).GetAwaiter().GetResult();
+
+        Assert.Equal(expected, actual);
+    }
+
     private static void RegistersEmailNotifierInDependencyInjection()
     {
         var services = new ServiceCollection();
@@ -90,9 +158,12 @@ internal static class TestRunner
         var provider = services.BuildServiceProvider();
         var notifier = provider.GetService<IErrorNotifier>();
         var builder = provider.GetService<ErrorEmailMessageBuilder>();
+        var options = provider.GetService<ErrorEmailOptions>();
 
         Assert.NotNull(notifier);
         Assert.NotNull(builder);
+        Assert.NotNull(options);
+        Assert.Equal("[Errors]", options!.SubjectPrefix);
     }
 
     private static ErrorEmailOptions CreateOptions()
@@ -106,7 +177,7 @@ internal static class TestRunner
         };
     }
 
-    private static ErrorNotificationRequest CreateRequest()
+    private static ErrorNotificationRequest CreateRequest(IReadOnlyDictionary<string, string?>? metadata = null)
     {
         return new ErrorNotificationRequest
         {
@@ -130,7 +201,7 @@ internal static class TestRunner
                     new ErrorDetail(DependencyErrorCodes.Failure.Value, "Dependency call failed.")
                 ]
             },
-            Metadata = new Dictionary<string, string?> { ["traceId"] = "trace-1" }
+            Metadata = metadata ?? new Dictionary<string, string?> { ["traceId"] = "trace-1" }
         };
     }
 }
@@ -158,6 +229,14 @@ internal static class Assert
         if (value is null)
         {
             throw new InvalidOperationException("Expected value to be non-null.");
+        }
+    }
+
+    public static void True(bool condition)
+    {
+        if (!condition)
+        {
+            throw new InvalidOperationException("Expected condition to be true.");
         }
     }
 }

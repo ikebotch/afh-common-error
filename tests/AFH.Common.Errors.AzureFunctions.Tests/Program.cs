@@ -1,11 +1,14 @@
 using System.Net;
 using System.Security.Claims;
+using System.Text;
 using AFH.Common.Errors.AzureFunctions.Builders;
 using AFH.Common.Errors.AzureFunctions.DependencyInjection;
 using AFH.Common.Errors.AzureFunctions.Extensions;
 using AFH.Common.Errors.AzureFunctions.Mapping;
 using AFH.Common.Errors.AzureFunctions.Responses;
+using AFH.Common.Errors.Codes;
 using AFH.Common.Errors.Exceptions;
+using AFH.Common.Errors.Mapping;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Core.FunctionMetadata;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -19,9 +22,15 @@ internal static class TestRunner
     {
         var tests = new Action[]
         {
+            MapsFunctionContextIntoErrorContext,
             MapsRequestExceptionContext,
+            FallsBackToTraceParentHeaderThenContextCorrelationId,
+            MergesFunctionAndRequestContext,
+            ResolvesHttpStatusCodes,
+            CreatesResponsesWithExpectedStatus,
             WritesJsonErrorResponses,
             BuildsHttpResponsesFromExceptions,
+            BuildsHttpResponsesFromMergedContext,
             RegistersAzureFunctionsServices
         };
 
@@ -32,6 +41,19 @@ internal static class TestRunner
 
         Console.WriteLine($"Executed {tests.Length} Azure Functions adapter tests successfully.");
         return 0;
+    }
+
+    private static void MapsFunctionContextIntoErrorContext()
+    {
+        var context = new TestFunctionContext();
+        context.Items["CorrelationId"] = "ctx-correlation";
+
+        var errorContext = context.ToErrorContext();
+
+        Assert.Equal("inv-123", errorContext.TraceId);
+        Assert.Equal("ctx-correlation", errorContext.CorrelationId);
+        Assert.Equal("ErrorsFunction", errorContext.Operation);
+        Assert.Equal("func-123", errorContext.Metadata?["functionId"]);
     }
 
     private static void MapsRequestExceptionContext()
@@ -46,6 +68,53 @@ internal static class TestRunner
         Assert.Equal("corr-123", result.Context?.CorrelationId);
         Assert.Equal("/clients/42", result.Context?.Path);
         Assert.Equal("GET", result.Context?.Method);
+        Assert.Equal("localhost", result.Context?.Metadata?["host"]);
+    }
+
+    private static void FallsBackToTraceParentHeaderThenContextCorrelationId()
+    {
+        var requestWithTraceParent = TestHttpRequestData.Create();
+        requestWithTraceParent.Headers.Add("traceparent", "00-trace-parent");
+
+        var requestWithoutHeaders = TestHttpRequestData.Create();
+
+        Assert.Equal("00-trace-parent", requestWithTraceParent.GetCorrelationId());
+        Assert.Equal("ctx-correlation", requestWithoutHeaders.GetCorrelationId());
+        Assert.Equal("GET", requestWithoutHeaders.ToErrorContext().Method);
+    }
+
+    private static void MergesFunctionAndRequestContext()
+    {
+        var mapper = new AzureFunctionExceptionMapper(new DefaultExceptionMapper());
+        var context = new TestFunctionContext();
+        context.Items["CorrelationId"] = "ctx-correlation";
+
+        var request = new TestHttpRequestData(context);
+        request.Headers.Add("x-correlation-id", "req-correlation");
+
+        var result = mapper.Map(new DependencyTimeoutException("Timed out."), context, request);
+
+        Assert.Equal(504, result.StatusCode);
+        Assert.Equal("req-correlation", result.Context?.CorrelationId);
+        Assert.Equal("ErrorsFunction", result.Context?.Operation);
+        Assert.Equal("/clients/42", result.Context?.Path);
+    }
+
+    private static void ResolvesHttpStatusCodes()
+    {
+        var mapping = new DefaultExceptionMapper().Map(new ForbiddenException("Denied."));
+
+        Assert.Equal(HttpStatusCode.Forbidden, HttpStatusCodeResolver.Resolve(CommonErrorCodes.Forbidden));
+        Assert.Equal(HttpStatusCode.Forbidden, HttpStatusCodeResolver.Resolve(mapping));
+    }
+
+    private static void CreatesResponsesWithExpectedStatus()
+    {
+        var request = TestHttpRequestData.Create();
+        var factory = new HttpResponseDataFactory();
+        var response = factory.Create(request, HttpStatusCode.BadGateway);
+
+        Assert.Equal(HttpStatusCode.BadGateway, response.StatusCode);
     }
 
     private static void WritesJsonErrorResponses()
@@ -68,6 +137,7 @@ internal static class TestRunner
         var content = reader.ReadToEnd();
 
         Assert.Contains("\"code\":\"validation.invalid_input\"", content);
+        Assert.Contains("\"statusCode\":400", content);
         Assert.Equal("application/json; charset=utf-8", response.Headers.GetValues("Content-Type").Single());
     }
 
@@ -82,6 +152,28 @@ internal static class TestRunner
         var response = builder.BuildAsync(request, new UnauthorizedException("Denied.")).GetAwaiter().GetResult();
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        AssertContainsResponsePayload(response, "\"code\":\"common.unauthorized\"");
+    }
+
+    private static void BuildsHttpResponsesFromMergedContext()
+    {
+        var services = new ServiceCollection()
+            .AddAfhCommonErrorsAzureFunctions()
+            .BuildServiceProvider();
+
+        var builder = services.GetRequiredService<AzureFunctionErrorResponseBuilder>();
+        var context = new TestFunctionContext();
+        var request = new TestHttpRequestData(context);
+        request.Headers.Add("x-correlation-id", "req-correlation");
+
+        var response = builder.BuildAsync(context, request, new ValidationException(
+        [
+            new AFH.Common.Errors.Models.ValidationErrorDetail("email", "Required.", ValidationErrorCodes.Required.Value)
+        ])).GetAwaiter().GetResult();
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        AssertContainsResponsePayload(response, "\"validationErrors\"");
+        AssertContainsResponsePayload(response, "\"correlationId\":\"req-correlation\"");
     }
 
     private static void RegistersAzureFunctionsServices()
@@ -93,6 +185,15 @@ internal static class TestRunner
         Assert.NotNull(provider.GetService<AzureFunctionExceptionMapper>());
         Assert.NotNull(provider.GetService<HttpResponseDataFactory>());
         Assert.NotNull(provider.GetService<AzureFunctionErrorResponseBuilder>());
+    }
+
+    private static void AssertContainsResponsePayload(HttpResponseData response, string expected)
+    {
+        response.Body.Position = 0;
+        using var reader = new StreamReader(response.Body, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, bufferSize: 1024, leaveOpen: true);
+        var content = reader.ReadToEnd();
+        Assert.Contains(expected, content);
+        response.Body.Position = 0;
     }
 }
 
@@ -152,7 +253,7 @@ internal sealed class TestFunctionDefinition : FunctionDefinition
 
 internal sealed class TestHttpRequestData : HttpRequestData
 {
-    private TestHttpRequestData(FunctionContext functionContext)
+    public TestHttpRequestData(FunctionContext functionContext)
         : base(functionContext)
     {
     }
