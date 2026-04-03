@@ -17,9 +17,9 @@ public sealed class EmailErrorNotifier : IErrorNotifier
         ErrorEmailMessageBuilder messageBuilder,
         Func<ErrorEmailTemplateModel, string, CancellationToken, Task> sender)
     {
-        _options = options;
-        _messageBuilder = messageBuilder;
-        _sender = sender;
+        _options = options ?? throw new ArgumentNullException(nameof(options));
+        _messageBuilder = messageBuilder ?? throw new ArgumentNullException(nameof(messageBuilder));
+        _sender = sender ?? throw new ArgumentNullException(nameof(sender));
     }
 
     public Task NotifyAsync(ErrorNotificationRequest request, CancellationToken cancellationToken = default)

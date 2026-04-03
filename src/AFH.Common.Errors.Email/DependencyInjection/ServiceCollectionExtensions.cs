@@ -24,7 +24,7 @@ public static class ServiceCollectionExtensions
             new EmailErrorNotifier(
                 serviceProvider.GetRequiredService<ErrorEmailOptions>(),
                 serviceProvider.GetRequiredService<ErrorEmailMessageBuilder>(),
-                senderFactory(serviceProvider)));
+                senderFactory(serviceProvider) ?? throw new InvalidOperationException("Email sender factory returned null.")));
 
         return services;
     }
