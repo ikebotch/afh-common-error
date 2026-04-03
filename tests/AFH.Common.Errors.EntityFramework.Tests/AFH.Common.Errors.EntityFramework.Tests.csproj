@@ -4,6 +4,7 @@
   </ItemGroup>
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
     <AssemblyName>AFH.Common.Errors.EntityFramework.Tests</AssemblyName>
     <IsPackable>false</IsPackable>
     <Description>Placeholder test project for AFH.Common.Errors.EntityFramework.</Description>
