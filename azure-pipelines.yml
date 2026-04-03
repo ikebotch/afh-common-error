@@ -19,6 +19,13 @@ variables:
     src/AFH.Common.Errors.ApplicationInsights/AFH.Common.Errors.ApplicationInsights.csproj
     src/AFH.Common.Errors.Email/AFH.Common.Errors.Email.csproj
     src/AFH.Common.Errors.EntityFramework/AFH.Common.Errors.EntityFramework.csproj
+- name: packProjects
+  value: >
+    src/AFH.Common.Errors/AFH.Common.Errors.csproj;
+    src/AFH.Common.Errors.AzureFunctions/AFH.Common.Errors.AzureFunctions.csproj;
+    src/AFH.Common.Errors.ApplicationInsights/AFH.Common.Errors.ApplicationInsights.csproj;
+    src/AFH.Common.Errors.Email/AFH.Common.Errors.Email.csproj;
+    src/AFH.Common.Errors.EntityFramework/AFH.Common.Errors.EntityFramework.csproj
 - name: testProjects
   value: 'tests/**/*.csproj'
 - name: buildConfiguration
@@ -136,7 +143,7 @@ stages:
       displayName: 'Pack (no-build)'
       inputs:
         command: pack
-        packagesToPack: '$(sdkProjects)'
+        packagesToPack: '$(packProjects)'
         configuration: '$(buildConfiguration)'
         includesymbols: true
         outputDir: '$(Build.ArtifactStagingDirectory)'
