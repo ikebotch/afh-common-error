@@ -18,7 +18,12 @@ public sealed class FunctionErrorResponseWriter
 
         response.Headers.Add("Content-Type", "application/json; charset=utf-8");
         response.Body.SetLength(0);
-        await JsonSerializer.SerializeAsync(response.Body, errorResponse, SerializerOptions, cancellationToken);
+        await JsonSerializer.SerializeAsync(
+            response.Body,
+            errorResponse,
+            errorResponse.GetType(),
+            SerializerOptions,
+            cancellationToken);
         response.Body.Position = 0;
     }
 }

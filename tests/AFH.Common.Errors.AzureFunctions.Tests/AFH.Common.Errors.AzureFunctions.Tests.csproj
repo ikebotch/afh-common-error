@@ -2,11 +2,21 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\AFH.Common.Errors.AzureFunctions\AFH.Common.Errors.AzureFunctions.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <OutputType>Exe</OutputType>
     <AssemblyName>AFH.Common.Errors.AzureFunctions.Tests</AssemblyName>
     <IsPackable>false</IsPackable>
-    <Description>Placeholder test project for AFH.Common.Errors.AzureFunctions.</Description>
+    <IsTestProject>true</IsTestProject>
+    <Description>Tests for AFH.Common.Errors.AzureFunctions.</Description>
   </PropertyGroup>
 </Project>
