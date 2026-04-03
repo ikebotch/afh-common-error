@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\AFH.Errors\AFH.Errors.csproj" />
+  </ItemGroup>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>AFH.Errors.AzureFunctions</AssemblyName>
+    <PackageId>AFH.Errors.AzureFunctions</PackageId>
+    <Description>Azure Functions adapter for the AFH error SDK.</Description>
+  </PropertyGroup>
+</Project>
