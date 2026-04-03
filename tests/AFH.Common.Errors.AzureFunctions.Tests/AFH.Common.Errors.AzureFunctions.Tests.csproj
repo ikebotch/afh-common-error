@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\AFH.Common.Errors.AzureFunctions\AFH.Common.Errors.AzureFunctions.csproj" />
+  </ItemGroup>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>AFH.Common.Errors.AzureFunctions.Tests</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <Description>Placeholder test project for AFH.Common.Errors.AzureFunctions.</Description>
+  </PropertyGroup>
+</Project>

@@ -1,4 +1,4 @@
-namespace AFH.Errors.Email;
+namespace AFH.Common.Errors.Email;
 
 public sealed class AssemblyMarker
 {

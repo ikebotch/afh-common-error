@@ -1,4 +1,4 @@
-namespace AFH.Errors.AzureFunctions;
+namespace AFH.Common.Errors;
 
 public sealed class AssemblyMarker
 {

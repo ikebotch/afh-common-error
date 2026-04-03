@@ -26,22 +26,22 @@
 │  └─ diagrams/
 ├─ eng/
 ├─ src/
-│  ├─ AFH.Errors/
-│  ├─ AFH.Errors.AzureFunctions/
-│  ├─ AFH.Errors.ApplicationInsights/
-│  ├─ AFH.Errors.Email/
-│  └─ AFH.Errors.EntityFramework/
+│  ├─ AFH.Common.Errors/
+│  ├─ AFH.Common.Errors.AzureFunctions/
+│  ├─ AFH.Common.Errors.ApplicationInsights/
+│  ├─ AFH.Common.Errors.Email/
+│  └─ AFH.Common.Errors.EntityFramework/
 ├─ tests/
-│  ├─ AFH.Errors.Tests/
-│  ├─ AFH.Errors.AzureFunctions.Tests/
-│  ├─ AFH.Errors.ApplicationInsights.Tests/
-│  ├─ AFH.Errors.Email.Tests/
-│  └─ AFH.Errors.EntityFramework.Tests/
+│  ├─ AFH.Common.Errors.Tests/
+│  ├─ AFH.Common.Errors.AzureFunctions.Tests/
+│  ├─ AFH.Common.Errors.ApplicationInsights.Tests/
+│  ├─ AFH.Common.Errors.Email.Tests/
+│  └─ AFH.Common.Errors.EntityFramework.Tests/
 ├─ .editorconfig
 ├─ .gitignore
 ├─ AGENTS.md
 ├─ Directory.Build.props
 ├─ Directory.Packages.props
 ├─ README.md
-└─ AFH.Errors.sln
+└─ AFH.Common.Errors.sln
 ```

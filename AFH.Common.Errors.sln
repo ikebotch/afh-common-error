@@ -5,27 +5,27 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AFH.Errors", "src\AFH.Errors\AFH.Errors.csproj", "{F41CE19C-F74B-4B86-8189-5BA73EEF0E4B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AFH.Common.Errors", "src\AFH.Common.Errors\AFH.Common.Errors.csproj", "{F41CE19C-F74B-4B86-8189-5BA73EEF0E4B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AFH.Errors.AzureFunctions", "src\AFH.Errors.AzureFunctions\AFH.Errors.AzureFunctions.csproj", "{2283574B-53C8-45FF-9724-7A2C690E2D65}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AFH.Common.Errors.AzureFunctions", "src\AFH.Common.Errors.AzureFunctions\AFH.Common.Errors.AzureFunctions.csproj", "{2283574B-53C8-45FF-9724-7A2C690E2D65}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AFH.Errors.ApplicationInsights", "src\AFH.Errors.ApplicationInsights\AFH.Errors.ApplicationInsights.csproj", "{D96A4930-F388-4A4D-A040-CC27E33D6290}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AFH.Common.Errors.ApplicationInsights", "src\AFH.Common.Errors.ApplicationInsights\AFH.Common.Errors.ApplicationInsights.csproj", "{D96A4930-F388-4A4D-A040-CC27E33D6290}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AFH.Errors.Email", "src\AFH.Errors.Email\AFH.Errors.Email.csproj", "{875AE9B5-93A0-459B-9B86-F2FFAD28B5E7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AFH.Common.Errors.Email", "src\AFH.Common.Errors.Email\AFH.Common.Errors.Email.csproj", "{875AE9B5-93A0-459B-9B86-F2FFAD28B5E7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AFH.Errors.EntityFramework", "src\AFH.Errors.EntityFramework\AFH.Errors.EntityFramework.csproj", "{7579FC38-8C49-40E4-BF40-B8C1FAB06792}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AFH.Common.Errors.EntityFramework", "src\AFH.Common.Errors.EntityFramework\AFH.Common.Errors.EntityFramework.csproj", "{7579FC38-8C49-40E4-BF40-B8C1FAB06792}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AFH.Errors.Tests", "tests\AFH.Errors.Tests\AFH.Errors.Tests.csproj", "{BE1A87FB-2DDF-4355-88A0-F67CEA0BE20F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AFH.Common.Errors.Tests", "tests\AFH.Common.Errors.Tests\AFH.Common.Errors.Tests.csproj", "{BE1A87FB-2DDF-4355-88A0-F67CEA0BE20F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AFH.Errors.AzureFunctions.Tests", "tests\AFH.Errors.AzureFunctions.Tests\AFH.Errors.AzureFunctions.Tests.csproj", "{BC9C0EAE-77DC-45F6-867C-C2C0F281F3DD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AFH.Common.Errors.AzureFunctions.Tests", "tests\AFH.Common.Errors.AzureFunctions.Tests\AFH.Common.Errors.AzureFunctions.Tests.csproj", "{BC9C0EAE-77DC-45F6-867C-C2C0F281F3DD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AFH.Errors.ApplicationInsights.Tests", "tests\AFH.Errors.ApplicationInsights.Tests\AFH.Errors.ApplicationInsights.Tests.csproj", "{FEC7A6B9-ED86-4FCB-8594-DAD6F0AD7A2B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AFH.Common.Errors.ApplicationInsights.Tests", "tests\AFH.Common.Errors.ApplicationInsights.Tests\AFH.Common.Errors.ApplicationInsights.Tests.csproj", "{FEC7A6B9-ED86-4FCB-8594-DAD6F0AD7A2B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AFH.Errors.Email.Tests", "tests\AFH.Errors.Email.Tests\AFH.Errors.Email.Tests.csproj", "{1564C976-1834-4BA0-B3AF-2CD7EDB8B099}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AFH.Common.Errors.Email.Tests", "tests\AFH.Common.Errors.Email.Tests\AFH.Common.Errors.Email.Tests.csproj", "{1564C976-1834-4BA0-B3AF-2CD7EDB8B099}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AFH.Errors.EntityFramework.Tests", "tests\AFH.Errors.EntityFramework.Tests\AFH.Errors.EntityFramework.Tests.csproj", "{F9E25AE7-37C0-4632-8F6C-6909797100DA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AFH.Common.Errors.EntityFramework.Tests", "tests\AFH.Common.Errors.EntityFramework.Tests\AFH.Common.Errors.EntityFramework.Tests.csproj", "{F9E25AE7-37C0-4632-8F6C-6909797100DA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
