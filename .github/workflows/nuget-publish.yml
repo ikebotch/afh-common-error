@@ -1,0 +1,122 @@
+name: NuGet Publish
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  RUN_TESTS: 'false'
+  SOLUTION: AFH.Common.Errors.sln
+  SDK_PROJECTS_ROOT: src
+  TEST_PROJECTS: tests/**/*.csproj
+  BUILD_CONFIGURATION: Release
+  DOTNET_VERSION: 10.0.x
+  NUGET_PUBLIC_SOURCE: https://api.nuget.org/v3/index.json
+
+jobs:
+  build:
+    name: Build
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore (solution)
+        shell: pwsh
+        run: dotnet restore $env:SOLUTION --source $env:NUGET_PUBLIC_SOURCE
+
+      - name: Build (solution)
+        shell: pwsh
+        run: dotnet build $env:SOLUTION --configuration $env:BUILD_CONFIGURATION --no-restore
+
+  test:
+    name: Test
+    needs: build
+    if: ${{ env.RUN_TESTS == 'true' }}
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Test
+        shell: pwsh
+        run: dotnet test $env:TEST_PROJECTS --configuration $env:BUILD_CONFIGURATION --logger trx --source $env:NUGET_PUBLIC_SOURCE
+
+  pack-and-publish:
+    name: Pack & Publish SDK
+    needs:
+      - build
+      - test
+    if: ${{ always() && needs.build.result == 'success' && (needs.test.result == 'success' || needs.test.result == 'skipped') && github.ref == 'refs/heads/main' }}
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore (solution)
+        shell: pwsh
+        run: dotnet restore $env:SOLUTION --source $env:NUGET_PUBLIC_SOURCE
+
+      - name: Build (solution)
+        shell: pwsh
+        run: dotnet build $env:SOLUTION --configuration $env:BUILD_CONFIGURATION --no-restore
+
+      - name: Pack (no-build)
+        shell: pwsh
+        run: |
+          $outputDir = Join-Path $env:RUNNER_TEMP 'packages'
+          New-Item -ItemType Directory -Force -Path $outputDir | Out-Null
+          $projects = Get-ChildItem -Path $env:SDK_PROJECTS_ROOT -Filter *.csproj -Recurse | Sort-Object FullName
+          foreach ($project in $projects) {
+            dotnet pack $project.FullName --configuration $env:BUILD_CONFIGURATION --no-build --include-symbols --output $outputDir
+          }
+
+      - name: Configure NuGet source
+        shell: pwsh
+        env:
+          NUGET_SOURCE: ${{ secrets.NUGET_SOURCE }}
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:NUGET_SOURCE) -or [string]::IsNullOrWhiteSpace($env:NUGET_API_KEY)) {
+            throw 'NUGET_SOURCE and NUGET_API_KEY secrets must be configured.'
+          }
+
+          dotnet nuget add source $env:NUGET_SOURCE `
+            --name publish `
+            --username github-actions `
+            --password $env:NUGET_API_KEY `
+            --store-password-in-clear-text
+
+      - name: Push packages
+        shell: pwsh
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          $packages = Get-ChildItem -Path (Join-Path $env:RUNNER_TEMP 'packages') -Filter *.nupkg |
+            Where-Object { $_.Name -notlike '*.snupkg' }
+
+          foreach ($package in $packages) {
+            dotnet nuget push $package.FullName --source publish --api-key $env:NUGET_API_KEY --skip-duplicate
+          }
