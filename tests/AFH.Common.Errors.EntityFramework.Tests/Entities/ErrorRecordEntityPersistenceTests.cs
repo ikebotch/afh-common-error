@@ -27,7 +27,9 @@ public sealed class ErrorRecordEntityPersistenceTests
         entity.Severity.Should().Be("Error");
         entity.Operation.Should().Be("PersistError");
         entity.CorrelationId.Should().Be("corr-1");
+        entity.UserId.Should().Be("user-1");
         entity.ContextJson.Should().Contain("\"traceId\":\"trace-1\"");
+        entity.ContextJson.Should().Contain("\"tenantId\":\"tenant-1\"");
         entity.DetailsJson.Should().Contain("\"code\":\"dependency.failure\"");
     }
 

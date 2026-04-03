@@ -14,7 +14,7 @@ public sealed class EntityFrameworkErrorPersistenceWriter<TContext> : IErrorPers
 
     public EntityFrameworkErrorPersistenceWriter(TContext dbContext)
     {
-        _dbContext = dbContext;
+        _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
     }
 
     public async Task WriteAsync(ErrorRecord record, CancellationToken cancellationToken = default)

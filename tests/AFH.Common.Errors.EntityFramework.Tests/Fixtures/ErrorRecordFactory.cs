@@ -20,7 +20,9 @@ internal static class ErrorRecordFactory
                 CorrelationId: "corr-1",
                 Path: "/errors",
                 Method: "POST",
-                Operation: "PersistError"),
+                Operation: "PersistError",
+                UserId: "user-1",
+                Metadata: new Dictionary<string, string?> { ["tenantId"] = "tenant-1" }),
             Details =
             [
                 new ErrorDetail(DependencyErrorCodes.Failure.Value, "Dependency failed.")

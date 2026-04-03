@@ -10,6 +10,7 @@ public sealed class ErrorRecordEntityConfiguration : IEntityTypeConfiguration<Er
     {
         ArgumentNullException.ThrowIfNull(builder);
 
+        builder.ToTable(nameof(ErrorRecordEntity));
         builder.HasKey(entity => entity.Id);
 
         builder.Property(entity => entity.Code)

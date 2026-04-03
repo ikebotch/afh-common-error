@@ -22,6 +22,9 @@ public sealed class ErrorRecordEntityConfigurationTests
         entityType!.GetTableName().Should().Be(nameof(ErrorRecordEntity));
         codeProperty.Should().NotBeNull();
         codeProperty!.GetMaxLength().Should().Be(128);
+        codeProperty.IsNullable.Should().BeFalse();
+        entityType.FindProperty(nameof(ErrorRecordEntity.Message))!.GetMaxLength().Should().Be(2048);
+        entityType.FindProperty(nameof(ErrorRecordEntity.Severity))!.GetMaxLength().Should().Be(64);
         entityType!.GetIndexes().Should().HaveCount(2);
     }
 }
