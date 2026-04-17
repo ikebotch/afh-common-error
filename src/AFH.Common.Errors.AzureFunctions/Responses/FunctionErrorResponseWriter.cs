@@ -16,6 +16,8 @@ public sealed class FunctionErrorResponseWriter
         ArgumentNullException.ThrowIfNull(response);
         ArgumentNullException.ThrowIfNull(errorResponse);
 
+        if (response.Headers.TryGetValues("Content-Type", out _))
+            response.Headers.Remove("Content-Type");
         response.Headers.Add("Content-Type", "application/json; charset=utf-8");
         response.Body.SetLength(0);
         await JsonSerializer.SerializeAsync(

@@ -27,6 +27,25 @@ public sealed class FunctionErrorResponseWriterTests
         (await ReadBodyAsync(response)).Should().Contain("\"statusCode\":400").And.Contain("\"code\":\"validation.invalid_input\"");
     }
 
+    [Fact]
+    public async Task WriteAsync_ReplacesExistingContentTypeHeader()
+    {
+        var response = new TestHttpResponseData(new TestFunctionContext());
+        response.Headers.Add("Content-Type", "text/plain");
+
+        var writer = new FunctionErrorResponseWriter();
+
+        await writer.WriteAsync(
+            response,
+            new ErrorResponse
+            {
+                StatusCode = 503,
+                Error = new ErrorDetail("dependency.unavailable", "Downstream failed.")
+            });
+
+        response.Headers.GetValues("Content-Type").Should().ContainSingle().Which.Should().Be("application/json; charset=utf-8");
+    }
+
     private static async Task<string> ReadBodyAsync(Microsoft.Azure.Functions.Worker.Http.HttpResponseData response)
     {
         response.Body.Position = 0;
