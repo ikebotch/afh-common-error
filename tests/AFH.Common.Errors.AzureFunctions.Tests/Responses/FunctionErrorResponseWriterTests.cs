@@ -46,6 +46,23 @@ public sealed class FunctionErrorResponseWriterTests
         response.Headers.GetValues("Content-Type").Should().ContainSingle().Which.Should().Be("application/json; charset=utf-8");
     }
 
+    [Fact]
+    public async Task WriteAsync_WritesPayloadToNonSeekableResponseBody()
+    {
+        var response = new NonSeekableTestHttpResponseData(new TestFunctionContext());
+        var writer = new FunctionErrorResponseWriter();
+
+        await writer.WriteAsync(
+            response,
+            new ErrorResponse
+            {
+                StatusCode = 500,
+                Error = new ErrorDetail("system.unhandled", "Something failed.")
+            });
+
+        response.BodyText.Should().Contain("\"statusCode\":500").And.Contain("\"code\":\"system.unhandled\"");
+    }
+
     private static async Task<string> ReadBodyAsync(Microsoft.Azure.Functions.Worker.Http.HttpResponseData response)
     {
         response.Body.Position = 0;
